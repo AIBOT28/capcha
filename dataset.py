@@ -19,10 +19,16 @@ class CaptchaDataset(Dataset):
         if self.is_train:
             self.transform = transforms.Compose([
                 transforms.Resize((Config.IMAGE_HEIGHT, Config.IMAGE_WIDTH)),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
-                transforms.RandomRotation(degrees=2), # Rất nhỏ để không làm mất chữ
+                transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.15),
+                transforms.RandomAffine(degrees=8, translate=(0.05, 0.05), scale=(0.85, 1.15), shear=8),
+                transforms.RandomPerspective(distortion_scale=0.3, p=0.5),
+                transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
+                # transforms.ElasticTransform có thể uốn éo chữ cực kỳ hiệu quả cho CAPTCHA (yêu cầu torchvision >= 0.12)
+                transforms.RandomApply([transforms.ElasticTransform(alpha=20.0, sigma=5.0)], p=0.5) if hasattr(transforms, 'ElasticTransform') else transforms.RandomApply([], p=0),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                # RandomErasing (xóa các mảng ngẫu nhiên) mô phỏng đường nhiễu gạch chéo che khuất chữ
+                transforms.RandomErasing(p=0.4, scale=(0.02, 0.1), ratio=(0.3, 3.3), value=0)
             ])
         else:
             self.transform = transforms.Compose([

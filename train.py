@@ -101,8 +101,7 @@ def train():
         model.train()
         train_loss = 0.0
         
-        loop = tqdm(train_loader, desc=f'Epoch {epoch+1}/{Config.EPOCHS} [Train]')
-        for images, targets, target_lengths, _ in loop:
+        for images, targets, target_lengths, _ in train_loader:
             images = images.to(Config.DEVICE)
             targets = targets.to(Config.DEVICE)
             
@@ -120,7 +119,6 @@ def train():
             optimizer.step()
             
             train_loss += loss.item()
-            loop.set_postfix(loss=loss.item())
             
         train_loss /= len(train_loader)
 
@@ -220,7 +218,7 @@ def train():
     test_total_cer = 0.0
     
     with torch.no_grad():
-        for images, targets, target_lengths, labels in tqdm(test_loader, desc="Testing"):
+        for images, targets, target_lengths, labels in test_loader:
             images = images.to(Config.DEVICE)
             outputs = model(images)
             outputs = outputs.permute(1, 0, 2) # [Seq_len, Batch, Num_classes]

@@ -42,7 +42,10 @@ class CRNN(nn.Module):
         output = self.fc(rnn_out) # [Width, Batch, num_chars + 1]
         
         # Log_softmax cho CTC Loss
-        return torch.nn.functional.log_softmax(output, dim=2)
+        output = torch.nn.functional.log_softmax(output, dim=2)
+        
+        # DataParallel expects batch at dim 0
+        return output.permute(1, 0, 2)
 
 
 class BidirectionalLSTM(nn.Module):

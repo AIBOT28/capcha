@@ -107,7 +107,8 @@ def train():
             targets = targets.to(Config.DEVICE)
             
             optimizer.zero_grad()
-            outputs = model(images) # [Seq_len, Batch, Num_classes]
+            outputs = model(images) # [Batch, Seq_len, Num_classes]
+            outputs = outputs.permute(1, 0, 2) # [Seq_len, Batch, Num_classes]
             
             input_lengths = torch.full(size=(outputs.size(1),), fill_value=outputs.size(0), dtype=torch.long)
             
@@ -138,6 +139,7 @@ def train():
                 targets = targets.to(Config.DEVICE)
                 
                 outputs = model(images)
+                outputs = outputs.permute(1, 0, 2) # [Seq_len, Batch, Num_classes]
                 input_lengths = torch.full(size=(outputs.size(1),), fill_value=outputs.size(0), dtype=torch.long)
                 loss = criterion(outputs, targets, input_lengths, target_lengths)
                 val_loss += loss.item()
@@ -221,6 +223,7 @@ def train():
         for images, targets, target_lengths, labels in tqdm(test_loader, desc="Testing"):
             images = images.to(Config.DEVICE)
             outputs = model(images)
+            outputs = outputs.permute(1, 0, 2) # [Seq_len, Batch, Num_classes]
             
             _, preds = outputs.max(2)
             preds = preds.transpose(1, 0).contiguous().view(-1)

@@ -6,7 +6,7 @@ class Config:
     # Tự động nhận diện nếu đang chạy trên Kaggle
     if os.path.exists("/kaggle"):
         # Lưu ý: Thay "ten-dataset-cua-ban" bằng đúng thư mục bạn đã add vào Kaggle
-        DATA_DIR = "/kaggle/input/ten-dataset-cua-ban/dataset" 
+        DATA_DIR = "/kaggle/input/datasets/lngkhoanguyns/datasetcapcha/dataset" 
     else:
         DATA_DIR = r"C:\Users\nguye\Documents\CaNhan\DeepLearning\giaiCapCha\dataset"
         

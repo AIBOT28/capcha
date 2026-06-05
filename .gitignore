@@ -1,0 +1,17 @@
+# Data and Models
+dataset/
+*.pth
+*.pt
+__pycache__/
+*.pyc
+*.zip
+
+# Plots and outputs
+*.png
+*.jpg
+*.jpeg
+
+# Environments
+.env
+venv/
+env/

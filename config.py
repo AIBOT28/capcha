@@ -33,7 +33,7 @@ class Config:
     USE_MULTI_GPU = torch.cuda.device_count() > 1
     
     # Tiền xử lý số luồng
-    NUM_WORKERS = 8 if os.name != 'nt' else 0  # 2 GPU nên tăng luồng đọc dữ liệu lên 8
+    NUM_WORKERS = 4 if os.name != 'nt' else 0  # 4 là mức tối ưu an toàn nhất cho đa số Kaggle kernels
 
     # Bảng ký tự mặc định
     VOCAB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"

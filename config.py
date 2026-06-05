@@ -3,7 +3,13 @@ import torch
 
 class Config:
     # Thư mục dữ liệu
-    DATA_DIR = r"C:\Users\nguye\Documents\CaNhan\DeepLearning\giaiCapCha\dataset"
+    # Tự động nhận diện nếu đang chạy trên Kaggle
+    if os.path.exists("/kaggle"):
+        # Lưu ý: Thay "ten-dataset-cua-ban" bằng đúng thư mục bạn đã add vào Kaggle
+        DATA_DIR = "/kaggle/input/ten-dataset-cua-ban/dataset" 
+    else:
+        DATA_DIR = r"C:\Users\nguye\Documents\CaNhan\DeepLearning\giaiCapCha\dataset"
+        
     TRAIN_DIR = os.path.join(DATA_DIR, "train")
     VAL_DIR = os.path.join(DATA_DIR, "val")
     TEST_DIR = os.path.join(DATA_DIR, "test")

@@ -32,6 +32,21 @@ def levenshtein_distance(s1, s2):
         previous_row = current_row
     return previous_row[-1]
 
+def compute_char_metrics(pred_str, true_str):
+    tp, fp, fn = 0, 0, 0
+    min_len = min(len(pred_str), len(true_str))
+    for i in range(min_len):
+        if pred_str[i] == true_str[i]:
+            tp += 1
+        else:
+            fp += 1
+            fn += 1
+    if len(pred_str) > min_len:
+        fp += len(pred_str) - min_len
+    if len(true_str) > min_len:
+        fn += len(true_str) - min_len
+    return tp, fp, fn
+
 def plot_training_history(history):
     epochs = range(1, len(history['train_loss']) + 1)
     
@@ -128,6 +143,7 @@ def train():
         correct_preds = 0
         total_preds = 0
         total_cer = 0.0
+        val_tp, val_fp, val_fn = 0, 0, 0
         
         idx_to_char = {idx + 1: char for idx, char in enumerate(Config.VOCAB)}
         
@@ -169,17 +185,27 @@ def train():
                     # Tính CER (Character Error Rate) dựa trên khoảng cách Levenshtein
                     dist = levenshtein_distance(pred_str, true_str)
                     total_cer += dist / max(len(true_str), 1)
+                    
+                    # Tính metrics (TP, FP, FN)
+                    tp, fp, fn = compute_char_metrics(pred_str, true_str)
+                    val_tp += tp
+                    val_fp += fp
+                    val_fn += fn
                 
         val_loss /= len(val_loader)
         val_acc = (correct_preds / total_preds) * 100 if total_preds > 0 else 0
         val_cer = (total_cer / total_preds) * 100 if total_preds > 0 else 0
+        
+        val_precision = val_tp / (val_tp + val_fp) if (val_tp + val_fp) > 0 else 0
+        val_recall = val_tp / (val_tp + val_fn) if (val_tp + val_fn) > 0 else 0
+        val_f1 = 2 * val_precision * val_recall / (val_precision + val_recall) if (val_precision + val_recall) > 0 else 0
         
         history['train_loss'].append(train_loss)
         history['val_loss'].append(val_loss)
         history['val_acc'].append(val_acc)
         history['val_cer'].append(val_cer)
         
-        print(f"Epoch {epoch+1}/{Config.EPOCHS} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2f}% | Val CER: {val_cer:.2f}%")
+        print(f"Epoch {epoch+1}/{Config.EPOCHS} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2f}% | Val CER: {val_cer:.2f}% | Pre: {val_precision:.4f} | Rec: {val_recall:.4f} | F1: {val_f1:.4f}")
         
         # Learning Rate Scheduler
         scheduler.step(val_loss)
@@ -216,6 +242,7 @@ def train():
     test_correct = 0
     test_total = 0
     test_total_cer = 0.0
+    test_tp, test_fp, test_fn = 0, 0, 0
     
     with torch.no_grad():
         for images, targets, target_lengths, labels in test_loader:
@@ -244,10 +271,21 @@ def train():
                 dist = levenshtein_distance(pred_str, labels[i])
                 test_total_cer += dist / max(len(labels[i]), 1)
                 
+                tp, fp, fn = compute_char_metrics(pred_str, labels[i])
+                test_tp += tp
+                test_fp += fp
+                test_fn += fn
+                
     test_acc = (test_correct / test_total) * 100 if test_total > 0 else 0
     test_cer = (test_total_cer / test_total) * 100 if test_total > 0 else 0
     
-    print(f"\n=> KẾT QUẢ TẬP TEST: {test_correct}/{test_total} ảnh đúng. ĐỘ CHÍNH XÁC: {test_acc:.2f}% | CER: {test_cer:.2f}%\n")
+    test_precision = test_tp / (test_tp + test_fp) if (test_tp + test_fp) > 0 else 0
+    test_recall = test_tp / (test_tp + test_fn) if (test_tp + test_fn) > 0 else 0
+    test_f1 = 2 * test_precision * test_recall / (test_precision + test_recall) if (test_precision + test_recall) > 0 else 0
+    
+    print(f"\n=> KẾT QUẢ TẬP TEST: {test_correct}/{test_total} ảnh đúng.")
+    print(f"   ĐỘ CHÍNH XÁC (EXACT MATCH): {test_acc:.2f}% | CER: {test_cer:.2f}%")
+    print(f"   CHARACTER METRICS -> Precision: {test_precision:.4f} | Recall: {test_recall:.4f} | F1 Score: {test_f1:.4f}\n")
 
 if __name__ == '__main__':
     train()

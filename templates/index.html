@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA Solver AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="container">
+        <header>
+            <h1>AI CAPTCHA <span>Solver</span></h1>
+            <p>Giải mã CAPTCHA với công nghệ Deep Learning CRNN</p>
+        </header>
+
+        <main class="glass-panel">
+            <div id="upload-zone" class="upload-zone">
+                <input type="file" id="file-input" accept="image/*" hidden>
+                <div class="upload-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <p class="upload-text">Kéo thả ảnh CAPTCHA vào đây<br>hoặc <span>nhấn để chọn file</span></p>
+                </div>
+            </div>
+
+            <div id="preview-section" class="preview-section hidden">
+                <div class="image-wrapper">
+                    <img id="preview-image" src="" alt="CAPTCHA Preview">
+                </div>
+                <div class="action-buttons">
+                    <button id="btn-reselect" class="btn btn-secondary">Chọn ảnh khác</button>
+                    <button id="btn-predict" class="btn btn-primary">Giải mã ngay</button>
+                </div>
+            </div>
+
+            <div id="loading-indicator" class="loading-indicator hidden">
+                <div class="spinner"></div>
+                <p>AI đang xử lý...</p>
+            </div>
+
+            <div id="result-section" class="result-section hidden">
+                <h3>Kết quả dự đoán:</h3>
+                <div class="result-box">
+                    <span id="prediction-text" class="glow-text">XYZ12</span>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Developed with ❤️ & PyTorch</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

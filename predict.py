@@ -6,6 +6,25 @@ import os
 from config import Config
 from model import CRNN
 
+# Biến toàn cục để cache mô hình
+_cached_model = None
+_cached_device = None
+
+def get_model(model_path='best_model.pth'):
+    global _cached_model, _cached_device
+    if _cached_model is None:
+        _cached_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        num_chars = len(Config.VOCAB)
+        model = CRNN(num_chars, Config.RNN_HIDDEN_SIZE).to(_cached_device)
+        
+        if os.path.exists(model_path):
+            model.load_state_dict(torch.load(model_path, map_location=_cached_device))
+            model.eval()
+            _cached_model = model
+        else:
+            raise FileNotFoundError(f"Model not found: {model_path}. Please train first.")
+    return _cached_model, _cached_device
+
 def decode_predictions(preds, idx_to_char):
     # preds: [seq_len, batch_size, num_classes]
     # Lấy class có xác suất cao nhất tại mỗi time step
@@ -21,18 +40,11 @@ def decode_predictions(preds, idx_to_char):
     return ''.join(char_list)
 
 def predict(image_path, model_path='best_model.pth'):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    # Load model
-    num_chars = len(Config.VOCAB)
-    model = CRNN(num_chars, Config.RNN_HIDDEN_SIZE).to(device)
-    
-    if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path, map_location=device))
-        model.eval()
-    else:
-        print(f"Không tìm thấy {model_path}. Vui lòng train mô hình trước.")
-        return
+    try:
+        model, device = get_model(model_path)
+    except FileNotFoundError as e:
+        print(e)
+        return None
 
     # Transform
     transform = transforms.Compose([
@@ -52,7 +64,7 @@ def predict(image_path, model_path='best_model.pth'):
         output = model(image_tensor)
         prediction = decode_predictions(output, idx_to_char)
         
-    print(f"Ảnh: {os.path.basename(image_path)} | Dự đoán: {prediction}")
+    print(f"Image: {os.path.basename(image_path)} | Prediction: {prediction}")
     return prediction
 
 if __name__ == '__main__':

@@ -19,16 +19,18 @@ class CaptchaDataset(Dataset):
         if self.is_train:
             self.transform = transforms.Compose([
                 transforms.Resize((Config.IMAGE_HEIGHT, Config.IMAGE_WIDTH)),
-                transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.15),
-                transforms.RandomAffine(degrees=8, translate=(0.05, 0.05), scale=(0.85, 1.15), shear=8),
-                transforms.RandomPerspective(distortion_scale=0.3, p=0.5),
-                transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
-                # transforms.ElasticTransform có thể uốn éo chữ cực kỳ hiệu quả cho CAPTCHA (yêu cầu torchvision >= 0.12)
-                transforms.RandomApply([transforms.ElasticTransform(alpha=20.0, sigma=5.0)], p=0.5) if hasattr(transforms, 'ElasticTransform') else transforms.RandomApply([], p=0),
+                transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
+                # Giảm độ xoay và bóp méo (vì chữ đã bị dính chùm rồi)
+                transforms.RandomAffine(degrees=5, translate=(0.02, 0.02), scale=(0.9, 1.1), shear=3),
+                transforms.RandomPerspective(distortion_scale=0.15, p=0.3),
+                # Giảm độ mờ
+                transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))], p=0.3),
+                # Tắt/Giảm mạnh ElasticTransform vì rất dễ làm rách nét chữ
+                transforms.RandomApply([transforms.ElasticTransform(alpha=10.0, sigma=3.0)], p=0.1) if hasattr(transforms, 'ElasticTransform') else transforms.RandomApply([], p=0),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-                # RandomErasing (xóa các mảng ngẫu nhiên) mô phỏng đường nhiễu gạch chéo che khuất chữ
-                transforms.RandomErasing(p=0.4, scale=(0.02, 0.1), ratio=(0.3, 3.3), value=0)
+                # Giảm tỉ lệ RandomErasing để tránh làm mất nét chữ (vì đã có đường kẻ chéo đè lên)
+                transforms.RandomErasing(p=0.1, scale=(0.01, 0.05), ratio=(0.3, 3.3), value=0)
             ])
         else:
             self.transform = transforms.Compose([
